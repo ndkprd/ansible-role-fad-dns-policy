@@ -1,8 +1,8 @@
 ---
 galaxy_info:
   author: ndkprd
-  role_name: fortiadc-glb-vsp
-  description: An Ansible role to mange/setup Fortinet's FortiADC Global Load Balance VSP configuration using REST API.
+  role_name: fortiadc-dns-policy
+  description: An Ansible role to mange/setup Fortinet's FortiADC Global DNS Policy configuration using REST API.
 
   license: MIT
 

@@ -1,0 +1,140 @@
+---
+
+- name: Set FAD DNS Policy REST API endpoint vars for {{ dns_policy.name }}
+  ansible.builtin.set_fact:
+    fad_api_endpoint_dns_policy: https://{{ ansible_host }}/api/global_dns_server_policy?vdom={{ fad_vdom }}&mkey={{ dns_policy.name }}
+    fad_dns_policy_name: "{{ dns_policy.name }}"
+  tags:
+    - fad_dns_policy
+
+- name: Print out the DNS Policy REST API endpoint for ({{ fad_dns_policy_name }})
+  ansible.builtin.debug:
+    msg: "This FAD DNS Policy REST API endpoint: {{ fad_api_endpoint_dns_policy }}"
+  tags:
+    - fad_dns_policy
+    - debug
+
+- name: Get the existing value of DNS Policy entry for ({{ fad_dns_policy_name }})
+  ansible.builtin.uri:
+    method: GET
+    url: "{{ fad_api_endpoint_dns_policy }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+  register: fad_dns_policy_existing_data
+  delegate_to: localhost
+  tags:
+    - fad_dns_policy
+
+- name: Print the existing value of DNS Policy entry for ({{ fad_dns_policy_name }})
+  ansible.builtin.debug:
+    var: fad_dns_policy_existing_data.json.payload
+  delegate_to: localhost
+  tags:
+    - fad_dns_policy
+    - debug
+
+# - name: Write DNS Policy request body json tmp file ({{ fad_dns_policy_name }}).
+#   ansible.builtin.copy:
+#     content: |
+#       {
+#         "source_address": "{{ dns_policy.source_address }}",
+#         "destination_address": "{{ dns_policy.destination_address }}",
+#         "dns64_list": "{{ dns_policy.dns64_list }}",
+#         "dnssec_validate_status": "{{ dns_policy.dnssec_validate_status }}",
+#         "forward": "{{ dns_policy.forward }}",
+#         "forwarders": "{{ dns_policy.forwarders }}"
+#         "recursion_status": "{{ dns_policy.recursion_status }}"
+#         "rrlimit": "{{ dns_policy.rrlimit }}"
+#         zone_list: "{{ dns_policy.zone_list }}"
+#       }
+#     dest: "/tmp/fad_dns_policy_{{ dns_policy.name }}_request_body.json"
+#     mode: u+rw,g-rw,o-rw
+#   register: request_body
+#   delegate_to: localhost
+#   run_once: true
+
+- name: Write DNS Policy request body template for ({{ fad_dns_policy_name }})
+  ansible.builtin.set_fact:
+    request_body: |
+      {
+        "source_address": "{{ dns_policy.source_address }}",
+        "destination_address": "{{ dns_policy.destination_address }}",
+        "dns64_list": "{{ dns_policy.dns64_list }}",
+        "dnssec_validate_status": "{{ dns_policy.dnssec_validate_status }}",
+        "forward": "{{ dns_policy.forward }}",
+        "forwarders": "{{ dns_policy.forwarders }}",
+        "recursion_status": "{{ dns_policy.recursion_status }}",
+        "rrlimit": "{{ dns_policy.rrlimit }}",
+        zone_list: "{{ dns_policy.zone_list }}"
+      }
+  tags:
+    - fad_dns_policy
+
+- name: Print out the request_body result for ({{ fad_dns_policy_name }})
+  ansible.builtin.debug:
+    var: request_body
+  tags:
+    - fad_dns_policy
+    - debug
+
+- name: Trying to create new DNS Policy entry for ({{ fad_dns_policy_name }})
+  ansible.builtin.uri:
+    method: POST
+    url: "{{ fad_api_endpoint_dns_policy }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: "{{ request_body }}"
+  register: fad_dns_policy_post_result
+  delegate_to: localhost
+  when: fad_dns_policy_existing_data.json.payload.mkey is undefined
+  changed_when: "fad_dns_policy_post_result.json.payload == 0"
+  failed_when: "fad_dns_policy_post_result.json.payload != -15 and fad_dns_policy_post_result.json.payload != 0"
+  tags:
+    - fad_dns_policy
+
+- name: Update the DNS Policy entry if entry exist ({{ fad_dns_policy_name }}).
+  ansible.builtin.uri:
+    method: PUT
+    url: "{{ fad_api_endpoint_dns_policy }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: "{{ lookup('ansible.builtin.file', request_body.dest) }}"
+  register: fad_dns_policy_put_result
+  when: >
+    (fad_dns_policy_existing_data.json.payload['mkey'] is defined)
+  delegate_to: localhost
+  failed_when: "fad_dns_policy_put_result.json.payload != -15 and fad_dns_policy_put_result.json.payload != 0"
+  tags:
+    - fad_dns_policy
+
+- name: Check if the FAD DNS Policy value has changed ({{ fad_dns_policy_name }}).
+  ansible.builtin.uri:
+    method: GET
+    url: "{{ fad_api_endpoint_dns_policy }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+  register: fad_dns_policy_new_data
+  changed_when: "fad_dns_policy_new_data.json.payload != fad_dns_policy_existing_data.json.payload"
+  delegate_to: localhost
+  tags:
+    - fad_dns_policy
+
+- name: Print the existing value of the DNS Policy entry ({{ fad_dns_policy_name }}).
+  ansible.builtin.debug:
+    var: fad_dns_policy_new_data.json
+  delegate_to: localhost
+  tags:
+    - fad_dns_policy
+    - debug
