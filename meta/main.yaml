@@ -1,21 +1,16 @@
 ---
+dependencies: []
+
 galaxy_info:
   author: ndkprd
   role_name: fortiadc-dns-policy
   description: An Ansible role to mange/setup Fortinet's FortiADC Global DNS Policy configuration using REST API.
-
   license: MIT
-
   min_ansible_version: '2.12'
-
   platforms:
     - name: Fedora
       versions:
         - 'all'
-
   galaxy_tags:
     - fortiadc
     - fortinet
-
-dependencies:
-  - ndkprd.fortiadc-glb-servers
