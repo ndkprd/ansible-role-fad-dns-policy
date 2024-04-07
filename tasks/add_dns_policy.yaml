@@ -80,6 +80,10 @@
     - fad_dns_policy
     - debug
 
+- name: Compoare existing value and desired value.
+  ansible.builtin.debug:
+    msg: "EXISTING VALUE: {{ fad_dns_policy_existing_data.json.payload.mkey }} vs DESIRED VALUE: {{ dns_policy }}"
+
 - name: Trying to create new DNS Policy entry for ({{ fad_dns_policy_name }})
   ansible.builtin.uri:
     method: POST
