@@ -114,7 +114,16 @@
     body: "{{ request_body }}"
   register: fad_dns_policy_put_result
   when: >
-    (fad_dns_policy_existing_data.json.payload['mkey'] is defined)
+    (fad_dns_policy_existing_data.json.payload['mkey'] is defined) and
+    (fad_dns_policy_existing_data.json.payload['destination_address'] != dns_policy.destination_address or
+    fad_dns_policy_existing_data.json.payload['dns64_list'] != dns_policy.dns64_list or
+    fad_dns_policy_existing_data.json.payload['dnssec_validate_status'] != dns_policy.dnssec_validate_status or
+    fad_dns_policy_existing_data.json.payload['forward'] != dns_policy.forward or
+    fad_dns_policy_existing_data.json.payload['forwarders'] != dns_policy.forwarders or
+    fad_dns_policy_existing_data.json.payload['recurision_status'] != dns_policy.recursion_status or
+    fad_dns_policy_existing_data.json.payload['rrlimit'] != dns_policy.rrlimit or
+    fad_dns_policy_existing_data.json.payload['source_address'] != dns_policy.source_address or
+    fad_dns_policy_existing_data.json.payload['zone_list'] != dns_policy.zone_list)
   delegate_to: localhost
   failed_when: "fad_dns_policy_put_result.json.payload != -15 and fad_dns_policy_put_result.json.payload != 0"
   tags:
@@ -135,7 +144,7 @@
   tags:
     - fad_dns_policy
 
-- name: Print the existing value of the DNS Policy entry ({{ fad_dns_policy_name }}).
+- name: Print the new value of the DNS Policy entry ({{ fad_dns_policy_name }}).
   ansible.builtin.debug:
     var: fad_dns_policy_new_data.json
   delegate_to: localhost
