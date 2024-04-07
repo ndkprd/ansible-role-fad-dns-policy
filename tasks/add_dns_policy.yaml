@@ -47,8 +47,7 @@
         "forward": "{{ dns_policy.forward }}",
         "forwarders": "{{ dns_policy.forwarders }}",
         "recurision_status": "{{ dns_policy.recursion_status }}",
-        "rrlimit": "{{ dns_policy.rrlimit }}",
-        "zone_list": "{{ dns_policy.zone_list }}"
+        "rrlimit": "{{ dns_policy.rrlimit }}"
       }
   tags:
     - fad_dns_policy

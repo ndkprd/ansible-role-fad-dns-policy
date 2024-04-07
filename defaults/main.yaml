@@ -11,4 +11,4 @@ fad_dns_policy:
     forwarders: "" # valid Remote DNS Servers entry mkey
     recursion_status: "disable" # "enable" or "disable"
     rrlimit: "" # valid Response Rate Limit 
-    zone_list: "ndkprd.com devops.ndkprd.com infra.ndkprd.com " # list of zones, ended with space before quotation
+    zone_list: "ndkprd.com devops.ndkprd.com infra.ndkprd.com " # is here for documentation purpose only

@@ -6,7 +6,7 @@ Ansible role to create/update Fortinet's FortiADC Global DNS Policy via their HT
 
 ## Prerequisite
 
-The DNS Policy API need some other resources to be exists first: *Address Group*, *Remote DNS Servers*, *Response Rate Limit*, and all the DNS Zones that you will put inside the `zone_list`. At this point in time I haven't created the roles to create/update them, so if you want to use customized resource for those, you need to make sure your customized resources entry you put in variable is already exists.
+The DNS Policy API need some other resources to be exists first: *Address Group*, *Remote DNS Servers*, *Response Rate Limit*, ~~and all the DNS Zones that you will put inside the `zone_list`~~. At this point in time I haven't created the roles to create/update them, so if you want to use customized resource for those, you need to make sure your customized resources entry you put in variable is already exists.
 
 ## Usage
 
@@ -83,7 +83,9 @@ For example, if you're using CLI, you can just go `ansible-playbook playbook.yam
 
 ## Limitation
 
-Developed and tested against FortiADC 7.0.
+Developed and tested against Hardware FortiADC 7.0 only.
+
+Previously this task also manage `zone_list`, but it's kinda hard considering their behavior where the latest "list" is applied regardless of the existing condition, which is kinda undesirable. So for now (if you using my roles (which is probably just me)), I offloaded the task to add zones to Policy to my [glb-zones](https://github.com/ndkprd/ansible-role-fortiadc-dns-zones) role, in which after creating each zones it also add itself to the DNS Policy.
 
 ## License
 
