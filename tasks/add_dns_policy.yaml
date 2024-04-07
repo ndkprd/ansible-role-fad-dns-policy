@@ -59,7 +59,7 @@
     - fad_dns_policy
     - debug
 
-- name: Trying to create new DNS Policy entry for {{ fad_dns_policy_name }}
+- name: Create new DNS Policy entry if entry not found for {{ fad_dns_policy_name }}
   ansible.builtin.uri:
     method: POST
     url: "{{ fad_api_endpoint_dns_policy }}"
