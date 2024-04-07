@@ -101,8 +101,7 @@
     fad_dns_policy_existing_data.json.payload['forwarders'] != dns_policy.forwarders or
     fad_dns_policy_existing_data.json.payload['recurision_status'] != dns_policy.recursion_status or
     fad_dns_policy_existing_data.json.payload['rrlimit'] != dns_policy.rrlimit or
-    fad_dns_policy_existing_data.json.payload['source_address'] != dns_policy.source_address or
-    fad_dns_policy_existing_data.json.payload['zone_list'] != dns_policy.zone_list)
+    fad_dns_policy_existing_data.json.payload['source_address'] != dns_policy.source_address)
   delegate_to: localhost
   failed_when: "fad_dns_policy_put_result.json.payload != -15 and fad_dns_policy_put_result.json.payload != 0"
   tags:
