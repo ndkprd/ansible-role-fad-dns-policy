@@ -57,7 +57,18 @@ fad2.ndkprd.com fad_apitoken=mysupersecrettoken
   become: false
   gather_facts: no
   vars:
-    fad_vdom: root
+    fad_vdom: "root"
+    fad_dns_policy:
+      - name: "DEFAULT_DNS_POLICY" # Global DNS Policy mkey
+        source_address: "any" # valid Address Group entry mkey used as source
+        destination_address: "any" # valid Address Group entry used as destination
+        dns64_list: ""
+        dnssec_validate_status: "disable" # "enable" or "disable"
+        forward: "first" # "first" or "only"
+        forwarders: "" # valid Remote DNS Servers entry mkey
+        recursion_status: "disable" # "enable" or "disable"
+        rrlimit: "" # valid Response Rate Limit 
+        zone_list: "ndkprd.com devops.ndkprd.com infra.ndkprd.com " # list of zones, ended with space before quotation, must be a valid zone entry mkey
 
   roles:
     - ndkprd.fortiadc-glb-vsp

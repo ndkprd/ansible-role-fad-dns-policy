@@ -36,26 +36,6 @@
     - fad_dns_policy
     - debug
 
-# - name: Write DNS Policy request body json tmp file ({{ fad_dns_policy_name }}).
-#   ansible.builtin.copy:
-#     content: |
-#       {
-#         "source_address": "{{ dns_policy.source_address }}",
-#         "destination_address": "{{ dns_policy.destination_address }}",
-#         "dns64_list": "{{ dns_policy.dns64_list }}",
-#         "dnssec_validate_status": "{{ dns_policy.dnssec_validate_status }}",
-#         "forward": "{{ dns_policy.forward }}",
-#         "forwarders": "{{ dns_policy.forwarders }}"
-#         "recursion_status": "{{ dns_policy.recursion_status }}"
-#         "rrlimit": "{{ dns_policy.rrlimit }}"
-#         zone_list: "{{ dns_policy.zone_list }}"
-#       }
-#     dest: "/tmp/fad_dns_policy_{{ dns_policy.name }}_request_body.json"
-#     mode: u+rw,g-rw,o-rw
-#   register: request_body
-#   delegate_to: localhost
-#   run_once: true
-
 - name: Write DNS Policy request body template for ({{ fad_dns_policy_name }})
   ansible.builtin.set_fact:
     request_body: |
