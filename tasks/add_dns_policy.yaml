@@ -107,7 +107,7 @@
     return_content: "{{ fad_api_uri_params.return_content }}"
     status_code: "{{ fad_api_uri_params.status_code }}"
     headers: "{{ fad_api_header }}"
-    body: "{{ lookup('ansible.builtin.file', request_body.dest) }}"
+    body: "{{ request_body }}"
   register: fad_dns_policy_put_result
   when: >
     (fad_dns_policy_existing_data.json.payload['mkey'] is defined)
