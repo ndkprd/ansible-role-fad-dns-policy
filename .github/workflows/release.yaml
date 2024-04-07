@@ -1,4 +1,6 @@
 ---
+# ./.github/workflows/release.yaml
+
 name: Release
 
 on:
@@ -7,19 +9,58 @@ on:
       - main
 
 jobs:
-  release:
+  bump-version:
     runs-on: ubuntu-latest
+    outputs:
+      NEW_VERSION: ${{ steps.set_var.outputs.NEW_VERSION }}
     steps:
+      - name: Checkout repo.
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Read and and update current the version based on tag.
+        # yeah, I know this dumb, don't mind me
+        run: |
+          git describe --tags --abbrev=0 > CURRENT_VERSION
+          cat CURRENT_VERSION
+          version=$(cat CURRENT_VERSION)
+          version=${version#v}
+          major_minor="${version%.*}"
+          patch_number="${version##*.}"
+          new_patch_number=$((patch_number + 1))
+          new_version="${major_minor}.${new_patch_number}"
+          echo "$new_version" > NEW_VERSION
+          echo "Updated from $version to $new_version"
+      - name: Pass the current file into a var.
+        id: set_var
+        run: echo "NEW_VERSION=$(cat NEW_VERSION)" >> $GITHUB_OUTPUT
 
+  github-release:
+    runs-on: ubuntu-latest
+    needs: bump-version
+    steps:
+      - name: Checkout repo.
+        uses: actions/checkout@v2
+      - name: Create a release.
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: "v${{ needs.bump-version.outputs.NEW_VERSION }}"
+          prerelease: false
+          title: "v${{ needs.bump-version.outputs.NEW_VERSION }}"
+
+  push-to-galaxy:
+    runs-on: ubuntu-latest
+    needs: github-release
+    if: ${{ needs.github-release.result == 'success' }}
+    steps:
+      - name: Checkout repo.
+        uses: actions/checkout@v4
       - name: Set up Python 3.
         uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
       - name: Install Ansible.
         run: pip3 install ansible-core
-
-      - name: Trigger a new import on Galaxy.
+      - name: Import role to Galaxy.
         run: >-
           ansible-galaxy role import --api-key ${{ secrets.GALAXY_API_KEY }}
           $(echo ${{ github.repository }} | cut -d/ -f1) $(echo ${{ github.repository }} | cut -d/ -f2)
