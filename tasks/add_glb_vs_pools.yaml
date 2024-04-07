@@ -1,0 +1,129 @@
+- name: Set FAD GLB VS Pools REST API endpoint vars ({{ vs_pool.name }}).
+  ansible.builtin.set_fact:
+    fad_api_endpoint_glb_vs_pools: https://{{ ansible_host }}/api/global_load_balance_virtual_server_pool?vdom={{ fad_vdom }}&mkey={{ vs_pool.name }}
+    fad_glb_vs_pools_name: "{{ vs_pool.name }}"
+  tags:
+    - fad_glb_vs_pools
+
+- name: Print out the GLB VS Pools REST API endpoint ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.debug:
+    msg: "This FAD GLB VS Pools REST API endpoint: {{ fad_api_endpoint_glb_vs_pools }}"
+  tags:
+    - fad_glb_vs_pools    
+    - debug
+
+- name: Get the existing value of GLB VS Pools entry ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.uri:
+    method: GET
+    url: "{{ fad_api_endpoint_glb_vs_pools }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+  register: fad_glb_vs_pools_existing_data
+  delegate_to: localhost
+  tags:
+    - fad_glb_vs_pools
+
+- name: Print the existing value of GLB VS Pools entry ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.debug:
+    var: fad_glb_vs_pools_existing_data.json.payload
+  delegate_to: localhost
+  tags:
+    - fad_glb_vs_pools
+    - debug
+
+- name: Write GLB VS Pools request body json tmp file ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.copy:
+    content: |
+      {
+        "alternate": "",
+        "alternate-cmr": "",
+        "check-server-status": "{{ vs_pool.check_server_status }}",
+        "check-virtual-server-existent": "{{ vs_pool.check_virtual_server_existent }}",
+        "load-balance-method": "{{ vs_pool.load_balance_method }}",
+        "mkey": "{{ vs_pool.name }}",
+        "preferred": "",
+        "preferred-cmr": "",
+        "vs_pool_member": "",
+        "vs_pool_member_count": ""
+      }
+    dest: "/tmp/fad_glb_vs_pools_{{ vs_pool.name }}_request_body.json"
+    mode: u+rw,g-rw,o-rw
+  register: request_body
+  delegate_to: localhost
+  run_once: true
+  tags:
+    - fad_glb_vs_pools
+
+- name: Trying to create new GLB VS Pools entry ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.uri:
+    method: POST
+    url: "{{ fad_api_endpoint_glb_vs_pools }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: "{{ lookup('ansible.builtin.file', request_body.dest) }}"
+  register: fad_glb_vs_pools_post_result
+  delegate_to: localhost
+  when: fad_glb_vs_pools_existing_data.json.payload.mkey is undefined
+  changed_when: "fad_glb_vs_pools_post_result.json.payload == 0"
+  failed_when: "fad_glb_vs_pools_post_result.json.payload != -15 and fad_glb_vs_pools_post_result.json.payload != 0"
+  tags:
+    - fad_glb_vs_pools
+
+- name: Update the GLB VS Pools entry if entry exist ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.uri:
+    method: PUT
+    url: "{{ fad_api_endpoint_glb_vs_pools }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: "{{ lookup('ansible.builtin.file', request_body.dest) }}"
+  register: fad_glb_vs_pools_put_result
+  delegate_to: localhost
+  when: >
+    (fad_glb_vs_pools_existing_data.json.payload['mkey'] is defined) and
+    (fad_glb_vs_pools_existing_data.json.payload['check-server-status'] != vs_pool.check_server_status or
+    fad_glb_vs_pools_existing_data.json.payload['check-virtual-server-existent'] != vs_pool.check_virtual_server_existent or
+    fad_glb_vs_pools_existing_data.json.payload['load-balance-method'] != vs_pool.load_balance_method)
+  failed_when: "fad_glb_vs_pools_put_result.json.payload != -15 and fad_glb_vs_pools_put_result.json.payload != 0"
+  tags:
+    - fad_glb_vs_pools
+
+- name: Include the FAD GLB VS Pools member task ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.include_tasks: add_glb_vs_pool_members.yaml
+  loop: "{{ vs_pool.vs_pool_members }}"
+  loop_control:
+    loop_var: vs_pool_member
+  tags:
+    - fad_glb_vs_pools
+    - fad_glb_vs_pool_members
+
+- name: Check if the FAD GLB VS Pools value has changed ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.uri:
+    method: GET
+    url: "{{ fad_api_endpoint_glb_vs_pools }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+  register: fad_glb_vs_pools_new_data
+  changed_when: "fad_glb_vs_pools_new_data.json.payload != fad_glb_vs_pools_existing_data.json.payload"
+  delegate_to: localhost
+  tags:
+    - fad_glb_vs_pools
+
+- name: Print the existing value of the GLB VS Pools entry ({{ fad_glb_vs_pools_name }}).
+  ansible.builtin.debug:
+    var: fad_glb_vs_pools_new_data.json
+  delegate_to: localhost
+  tags:
+    - fad_glb_vs_pools
+    - debug

@@ -1,0 +1,14 @@
+---
+
+# - name: Create/update GLB Data Centers, Servers, and Servers Members using role.
+#   ansible.builtin.include_role: 
+#     name: ndkprd.fortiadc-glb-servers
+# I don't know that dependencies are automatically run, lol.
+
+- name: Include task to create/update GLB VSP.
+  ansible.builtin.include_tasks: add_glb_vs_pools.yaml
+  loop: "{{ fad_glb_vs_pools }}"
+  loop_control:
+    loop_var: vs_pool
+  tags:
+    - fad_glb_vs_pools
