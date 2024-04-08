@@ -85,7 +85,7 @@ For example, if you're using CLI, you can just go `ansible-playbook playbook.yam
 
 Developed and tested against Hardware FortiADC 7.0 only.
 
-Previously this task also manage `zone_list`, but it's kinda hard considering their behavior where the latest "list" is applied regardless of the existing condition, which is kinda undesirable. So for now (if you using my roles (which is probably just me)), I offloaded the task to add zones to Policy to my [glb-zones](https://github.com/ndkprd/ansible-role-fortiadc-dns-zones) role, in which after creating each zones it also add itself to the DNS Policy.
+Previously this zone also manage `zone_list`, but it's kinda hard considering their behavior where the latest "list" is applied regardless of the existing condition, which is kinda undesirable. So for now (if you using my roles (which is probably just me)), I offloaded the task to add zones to Policy to my [glb-zones](https://github.com/ndkprd/ansible-role-fortiadc-dns-zones) role, in which after creating each zones it also add itself to the DNS Policy.
 
 ## License
 
