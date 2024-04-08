@@ -117,6 +117,7 @@
   delegate_to: localhost
   tags:
     - fad_dns_policy
+    - debug
 
 - name: Print the new value of the DNS Policy entry {{ fad_dns_policy_name }}
   ansible.builtin.debug:
