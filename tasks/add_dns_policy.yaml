@@ -40,6 +40,7 @@
   ansible.builtin.set_fact:
     request_body: |
       {
+        "mkey": "{{ dns_policy.name }}",
         "source_address": "{{ dns_policy.source_address }}",
         "destination_address": "{{ dns_policy.destination_address }}",
         "dns64_list": "{{ dns_policy.dns64_list }}",
