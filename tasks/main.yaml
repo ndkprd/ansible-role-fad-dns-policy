@@ -1,9 +1,11 @@
 ---
 
-- name: Include task to create/update Global DNS Policy.
-  ansible.builtin.include_tasks: add_dns_policy.yaml
-  loop: "{{ fad_dns_policies }}"
-  loop_control:
-    loop_var: dns_policy
-  tags:
-    - fad_dns_policy
+- name: Create/update DNS Policy entry.
+  vars:
+    fad_dns_policy_api_endpoint: "{{ fad_base_url + fad_api_endpoint.dns_policy }}"
+    fad_dns_policy_zone_list:
+      "{{ (lookup('url', fad_base_url + fad_api_endpoint.dns_zone_unspecified, validate_certs=false, \
+      split_lines=false, headers=fad_api_header) | from_json).get('payload') | map(attribute='mkey') \
+      | join(' ') | trim }} "
+  ansible.builtin.import_tasks: fad_dns_policy.yaml
+  tags: [fad_dns_policy]

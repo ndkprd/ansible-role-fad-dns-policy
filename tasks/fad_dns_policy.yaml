@@ -1,0 +1,118 @@
+---
+
+- name: Print out the DNS Policy existing values.
+  ansible.builtin.debug:
+    msg: >
+      {{ (lookup('url', fad_dns_policy_api_endpoint
+      % (dns_policy.name), validate_certs=false, split_lines=false, headers=fad_api_header) | from_json).get('payload') }}
+  loop: "{{ fad_dns_policies }}"
+  loop_control:
+    loop_var: dns_policy
+    label: "{{ dns_policy.name }}"
+  tags: [debug]
+
+- name: Create new DNS Policy entry if it's not found.
+  ansible.builtin.uri:
+    method: POST
+    url: "{{ fad_dns_policy_api_endpoint | format(dns_policy.name) }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: |
+      {
+        "mkey": "{{ dns_policy.name }}",
+        "source_address": "{{ dns_policy.source_address }}",
+        "destination_address": "{{ dns_policy.destination_address }}",
+        "dns64_list": "{{ dns_policy.dns64_list }}",
+        "dnssec_validate_status": "{{ dns_policy.dnssec_validate_status }}",
+        "forward": "{{ dns_policy.forward }}",
+        "forwarders": "{{ dns_policy.forwarders }}",
+        "recurision_status": "{{ dns_policy.recursion_status }}",
+        "rrlimit": "{{ dns_policy.rrlimit }}"
+      }
+  register: fad_dns_policy_post_results
+  loop: "{{ fad_dns_policies }}"
+  loop_control:
+    loop_var: dns_policy
+    label: "{{ dns_policy.name }}"
+  when: >
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload').mkey is undefined
+  changed_when: "fad_dns_policy_post_results.json.payload == 0"
+  failed_when: fad_dns_policy_post_results.json.payload not in [0, -15]
+
+- name: Update DNS Policy entry if it's exist and any of its value is changed.
+  ansible.builtin.uri:
+    method: PUT
+    url: "{{ fad_dns_policy_api_endpoint | format(dns_policy.name) }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: |
+      {
+        "mkey": "{{ dns_policy.name }}",
+        "source_address": "{{ dns_policy.source_address | default('any') }}",
+        "destination_address": "{{ dns_policy.destination_address | default('any') }}",
+        "dns64_list": "{{ dns_policy.dns64_list | default('') }}",
+        "dnssec_validate_status": "{{ dns_policy.dnssec_validate_status | default('disable') }}",
+        "forward": "{{ dns_policy.forward | default('first') }}",
+        "forwarders": "{{ dns_policy.forwarders | default('') }}",
+        "recurision_status": "{{ dns_policy.recursion_status | default('disable') }}",
+        "rrlimit": "{{ dns_policy.rrlimit }}",
+        "zone_list": "{{ fad_dns_policy_zone_list }}"
+      }
+  register: fad_dns_policy_put_results
+  loop: "{{ fad_dns_policies }}"
+  loop_control:
+    loop_var: dns_policy
+    label: "{{ dns_policy.name }}"
+  when: >
+    ((lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['mkey'] is defined) and
+    ((lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['destination_address'] != dns_policy.destination_address | default('any') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['dns64_list'] != dns_policy.dns64_list | default('') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['dnssec_validate_status'] != dns_policy.dnssec_validate_status | default('disable') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['forward'] != dns_policy.forward | default('first') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['forwarders'] != dns_policy.forwarders | default('') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['recurision_status'] != dns_policy.recursion_status | default('disable') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['rrlimit'] != dns_policy.rrlimit | default('') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['source_address'] != dns_policy.source_address | default('any') or
+    (lookup('url', fad_dns_policy_api_endpoint
+    % (dns_policy.name), validate_certs=false, split_lines=false,
+    headers=fad_api_header) | from_json).get('payload')['zone_list'] != fad_dns_policy_zone_list
+    )
+  changed_when: "fad_dns_policy_put_results.json.payload == 0"
+  failed_when: "fad_dns_policy_put_results.json.payload != 0 and fad_dns_policy_put_results.json.payload != -15"
+
+- name: Print out the DNS Policy values after create/update task.
+  ansible.builtin.debug:
+    msg: >
+      {{ (lookup('url', fad_dns_policy_api_endpoint
+      % (dns_policy.name), validate_certs=false, split_lines=false, headers=fad_api_header) | from_json).get('payload') }}
+  loop: "{{ fad_dns_policies }}"
+  loop_control:
+    loop_var: dns_policy
+    label: "{{ dns_policy.name }}"
+  tags: [debug]

@@ -1,5 +1,12 @@
 ---
 
+fad_base_url: "https://{{ ansible_host }}/api"
+
+fad_api_endpoint:
+  dns_policy: "/global_dns_server_policy?vdom={{ fad_vdom }}&mkey=%s"
+  dns_zone: "/global_dns_server_zone?vdom={{ fad_vdom }}&mkey=%s"
+  dns_zone_unspecified: "/global_dns_server_zone?vdom={{ fad_vdom }}"
+
 fad_api_uri_params:
   body_format: json
   validate_certs: false
