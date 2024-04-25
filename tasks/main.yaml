@@ -3,6 +3,7 @@
 - name: Create/update DNS Policy entry.
   vars:
     fad_dns_policy_api_endpoint: "{{ fad_base_url + fad_api_endpoint.dns_policy }}"
+    # get current existing zones and put them into a zone_list compatible variable
     fad_dns_policy_zone_list:
       "{{ (lookup('url', fad_base_url + fad_api_endpoint.dns_zone_unspecified, validate_certs=false, \
       split_lines=false, headers=fad_api_header) | from_json).get('payload') | map(attribute='mkey') \

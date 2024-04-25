@@ -71,6 +71,7 @@
   loop_control:
     loop_var: dns_policy
     label: "{{ dns_policy.name }}"
+  # for the zone_list, it will compare the current value in the zone_list with the currently existing zones
   when: >
     ((lookup('url', fad_dns_policy_api_endpoint
     % (dns_policy.name), validate_certs=false, split_lines=false,
