@@ -1,0 +1,19 @@
+---
+
+- name: Delete new DNS Policy entry if it's not found.
+  vars:
+    fad_dns_policy_api_endpoint: "{{ fad_base_url + fad_api_endpoint.dns_policy }}"
+  ansible.builtin.uri:
+    method: DELETE
+    url: "{{ fad_dns_policy_api_endpoint | format('DEFAULT_DNS_POLICY') }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+  register: fad_dns_policy_delete_results
+  when:
+    - (lookup('url', fad_dns_policy_api_endpoint
+      % ('DEFAULT_DNS_POLICY'), validate_certs=false, split_lines=false,
+      headers=fad_api_header) | from_json).get('payload').mkey is defined
+  changed_when: "fad_dns_policy_delete_results.json.payload == 0"

@@ -98,11 +98,7 @@
     headers=fad_api_header) | from_json).get('payload')['rrlimit'] != dns_policy.rrlimit | default('') or
     (lookup('url', fad_dns_policy_api_endpoint
     % (dns_policy.name), validate_certs=false, split_lines=false,
-    headers=fad_api_header) | from_json).get('payload')['source_address'] != dns_policy.source_address | default('any') or
-    (lookup('url', fad_dns_policy_api_endpoint
-    % (dns_policy.name), validate_certs=false, split_lines=false,
-    headers=fad_api_header) | from_json).get('payload')['zone_list'] != fad_dns_policy_zone_list
-    )
+    headers=fad_api_header) | from_json).get('payload')['source_address'] != dns_policy.source_address | default('any'))
   changed_when: "fad_dns_policy_put_results.json.payload == 0"
   failed_when: "fad_dns_policy_put_results.json.payload != 0 and fad_dns_policy_put_results.json.payload != -15"
 

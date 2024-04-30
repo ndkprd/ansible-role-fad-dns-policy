@@ -1,5 +1,6 @@
 ---
-dependencies: []
+dependencies:
+  - ndkprd.fad_dns_address_group
 
 galaxy_info:
   author: ndkprd

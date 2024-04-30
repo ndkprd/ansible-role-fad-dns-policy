@@ -1,5 +1,9 @@
 ---
 
+- name: Delete default policy.
+  ansible.builtin.import_tasks: delete_default_policy.yaml
+  tags: [fad_dns_policy]
+
 - name: Create/update DNS Policy entry.
   vars:
     fad_dns_policy_api_endpoint: "{{ fad_base_url + fad_api_endpoint.dns_policy }}"
