@@ -1,0 +1,82 @@
+---
+
+- name: Print out the DNS General Settings existing values.
+  ansible.builtin.debug:
+    msg: >
+      {{ (lookup('url', fad_dns_general_settings_api_endpoint, validate_certs=false,
+      split_lines=false, headers=fad_api_header) | from_json).get('payload') }}
+  tags: [debug]
+
+- name: Update DNS General Settings if it's exist and any of its value is changed.
+  vars:
+    fad_dns_general_settings_existing_value: >
+      {{ (lookup('url', fad_dns_general_settings_api_endpoint, validate_certs=false,
+      split_lines=false, headers=fad_api_header) | from_json).get('payload') }}
+    fad_dns_general_settings_desired_value: |
+      {
+          "certificate": "{{ fad_dns_general_settings.certificate | string }}",
+          "dnssec_validate_status": "{{ fad_dns_general_settings.dnssec_validate_status | string }}",
+          "doh_interface_list": "{{ fad_dns_general_settings.doh_interface_list | string }}",
+          "doh_port": "{{ fad_dns_general_settings.doh_port | string }}",
+          "doh_status": "{{ fad_dns_general_settings.doh_status | string }}",
+          "dohs_interface_list": "{{ fad_dns_general_settings.dohs_interface_list | string }}",
+          "dohs_port": "{{ fad_dns_general_settings.dohs_port | string }}",
+          "dohs_status": "{{ fad_dns_general_settings.dohs_status | string }}",
+          "dot_interface_list": "{{ fad_dns_general_settings.dot_interface_list | string }}",
+          "dot_port": "{{ fad_dns_general_settings.dot_port | string }}",
+          "dot_status": "{{ fad_dns_general_settings.global_dns_mode | string }}",
+          "forward": "{{ fad_dns_general_settings.forward | string }}",
+          "forwarders": "{{ fad_dns_general_settings.forwarders | string }}",
+          "gds_status": "{{ fad_dns_general_settings.global_dns_mode | string }}",
+          "interface_list": "{{ fad_dns_general_settings.interface_list | string }}",
+          "ipv4-accessed-status": "{{ fad_dns_general_settings.ipv4_mode | string }}",
+          "ipv6_accessed_status": "{{ fad_dns_general_settings.ipv6_mode | string }}",
+          "listen-on_all_interface": {{ fad_dns_general_settings.listen_to_all_interface | string }}",
+          "recurision_status": "{{ fad_dns_general_settings.recursion_status | string }}",
+          "response_ratelimit": "{{ fad_dns_general_settings.response_ratelimit | string }}",
+          "traffic-log": "{{ fad_dns_general_settings.traffic_log | string }}",
+          "use-system_dns_server": "{{ fad_dns_general_settings.use_system_dns_server | string }}",
+          "_id": -1
+      }
+  ansible.builtin.uri:
+    method: PUT
+    url: "{{ fad_dns_general_settings_api_endpoint }}"
+    body_format: "{{ fad_api_uri_params.body_format }}"
+    validate_certs: "{{ fad_api_uri_params.validate_certs }}"
+    return_content: "{{ fad_api_uri_params.return_content }}"
+    status_code: "{{ fad_api_uri_params.status_code }}"
+    headers: "{{ fad_api_header }}"
+    body: "{{ fad_dns_general_settings_desired_value }}"
+  register: fad_dns_general_settings_put_results
+  # for the zone_list, it will compare the current value in the zone_list with the currently existing zones
+  when: >
+    fad_dns_general_settings_existing_value['certificate'] != fad_dns_general_settings.certificate | string or
+    fad_dns_general_settings_existing_value['dnssec_validate_status'] != fad_dns_general_settings.dnssec_validate_status | string or
+    fad_dns_general_settings_existing_value['doh_interface_list'] != fad_dns_general_settings.doh_interface_list | string or
+    fad_dns_general_settings_existing_value['doh_port'] != fad_dns_general_settings.doh_port | string or
+    fad_dns_general_settings_existing_value['doh_status'] != fad_dns_general_settings.doh_status | string or
+    fad_dns_general_settings_existing_value['dohs_interface_list'] != fad_dns_general_settings.dohs_interface_list | string or
+    fad_dns_general_settings_existing_value['dohs_port'] != fad_dns_general_settings.dohs_port | string or
+    fad_dns_general_settings_existing_value['dohs_status'] != fad_dns_general_settings.dohs_status | string or
+    fad_dns_general_settings_existing_value['dot_interface_list'] != fad_dns_general_settings.dot_interface_list | string or
+    fad_dns_general_settings_existing_value['dot_port'] != fad_dns_general_settings.dot_port | string or
+    fad_dns_general_settings_existing_value['dot_status'] != fad_dns_general_settings.dot_status | string or
+    fad_dns_general_settings_existing_value['forward'] != fad_dns_general_settings.forward | string or
+    fad_dns_general_settings_existing_value['forwarders'] != fad_dns_general_settings.forwarders | string or
+    fad_dns_general_settings_existing_value['gds_status'] != fad_dns_general_settings.global_dns_mode | string or
+    fad_dns_general_settings_existing_value['interface_list'] != fad_dns_general_settings.interface_list | string or
+    fad_dns_general_settings_existing_value['ipv4-accessed-status'] != fad_dns_general_settings.ipv4_mode | string or
+    fad_dns_general_settings_existing_value['ipv6_accessed_status'] != fad_dns_general_settings.ipv6_mode | string or
+    fad_dns_general_settings_existing_value['listen-on_all_interface'] != fad_dns_general_settings.listen_to_all_interface | string or
+    fad_dns_general_settings_existing_value['recurision_status'] != fad_dns_general_settings.recursion_status | string or
+    fad_dns_general_settings_existing_value['response_ratelimit'] != fad_dns_general_settings.response_ratelimit | string or
+    fad_dns_general_settings_existing_value['traffic-log'] != fad_dns_general_settings.traffic_log | string or
+    fad_dns_general_settings_existing_value['use-system_dns_server'] != fad_dns_general_settings.use_system_dns_server | string
+  changed_when: "fad_dns_general_settings_put_results.json.payload == 0"
+  failed_when: "fad_dns_general_settings_put_results.json.payload != 0 and fad_dns_general_settings_put_results.json.payload != -15"
+
+- name: Print out the DNS General Settings values after create/update task.
+  ansible.builtin.debug:
+    msg: >
+      {{ (lookup('url', fad_dns_general_settings_api_endpoint, validate_certs=false, split_lines=false, headers=fad_api_header) | from_json).get('payload') }}
+  tags: [debug]
