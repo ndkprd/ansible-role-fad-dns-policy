@@ -63,8 +63,7 @@
         "forward": "{{ dns_policy.forward | default('first') }}",
         "forwarders": "{{ dns_policy.forwarders | default('') }}",
         "recurision_status": "{{ dns_policy.recursion_status | default('disable') }}",
-        "rrlimit": "{{ dns_policy.rrlimit }}",
-        "zone_list": "{{ fad_dns_policy_zone_list }}"
+        "rrlimit": "{{ dns_policy.rrlimit }}"
       }
   register: fad_dns_policy_put_results
   loop: "{{ fad_dns_policies }}"

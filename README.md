@@ -2,7 +2,7 @@
 
 ## Description
 
-Ansible role to create/update Fortinet's FortiADC Global DNS Policy via their HTTP REST API. 
+Ansible role to create/update Fortinet's FortiADC Global DNS Policy entries and General poliicy via their HTTP REST API. 
 
 ## Prerequisite
 
