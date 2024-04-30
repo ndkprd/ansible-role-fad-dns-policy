@@ -12,10 +12,6 @@
     status_code: "{{ fad_api_uri_params.status_code }}"
     headers: "{{ fad_api_header }}"
   register: fad_dns_policy_delete_results
-  loop: "{{ fad_dns_policies }}"
-  loop_control:
-    loop_var: dns_policy
-    label: "{{ dns_policy.name }}"
   when:
     - (lookup('url', fad_dns_policy_api_endpoint
       % ('DEFAULT_DNS_POLICY'), validate_certs=false, split_lines=false,
