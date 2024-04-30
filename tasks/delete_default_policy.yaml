@@ -1,6 +1,6 @@
 ---
 
-- name: Create new DNS Policy entry if it's not found.
+- name: Delete new DNS Policy entry if it's not found.
   vars:
     fad_dns_policy_api_endpoint: "{{ fad_base_url + fad_api_endpoint.dns_policy }}"
   ansible.builtin.uri:
