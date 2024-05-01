@@ -31,12 +31,11 @@
           "interface_list": "{{ fad_dns_general_settings.interface_list | string }}",
           "ipv4-accessed-status": "{{ fad_dns_general_settings.ipv4_mode | string }}",
           "ipv6_accessed_status": "{{ fad_dns_general_settings.ipv6_mode | string }}",
-          "listen-on_all_interface": {{ fad_dns_general_settings.listen_to_all_interface | string }}",
+          "listen-on_all_interface": "{{ fad_dns_general_settings.listen_to_all_interface | string }}",
           "recurision_status": "{{ fad_dns_general_settings.recursion_status | string }}",
           "response_ratelimit": "{{ fad_dns_general_settings.response_ratelimit | string }}",
           "traffic-log": "{{ fad_dns_general_settings.traffic_log | string }}",
-          "use-system_dns_server": "{{ fad_dns_general_settings.use_system_dns_server | string }}",
-          "_id": -1
+          "use-system_dns_server": "{{ fad_dns_general_settings.use_system_dns_server | string }}"
       }
   ansible.builtin.uri:
     method: PUT
