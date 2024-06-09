@@ -6,49 +6,68 @@
   gather_facts: false
   connection: local
   vars:
-     # for testing-purpose only, to delete the created resources after. change to 'false' or override from --extra-vars if you want it to stay.
-    do_cleanup: true
-    # global-load-balance data-center entries
-    fad_glb_data_centers:
-      - name: dc1.ndkprd.com
-        location: ID
-    # global-load-balance servers entries
-    fad_glb_servers:
-      - name: "dmz.dc1.ndkprd.com"
-        data_center: "dc1.ndkprd.com"
-        health_check_ctrl: enable
-        health_check_list: "LB_HLTHCK_ICMP "
-        health_check_relationship: OR
-        server_type: Generic-Host
-        auth_type: none
-        address_type: ipv4 # FAD address type
-        auto_sync: disable
-        fad_ipv4: "0.0.0.0"
-        fad_ipv6: "::"
-        fad_pass: ""
-        fad_port: "5858"
-        server_members:
-          - name: public-waf-1.dc1.ndkprd.com
-            ipv4: 10.10.1.1
-            ipv6: "::"
-            address_type: ipv4
-            gateway: ""
-            health_check_ctrl: disable
-            health_check_inherit: enable
-            health_check_list: ""
-            health_check_relationship: "OR"
-    # global-load-balance virtual-server-pool entries
-    fad_glb_vs_pools:
-      - name: public-waf.dc1.ndkprd.com # VS Pools mkey
-        check_server_status: enable # healthcheck
-        check_virtual_server_existent: disable
-        load_balance_method: wrr
-        vs_pool_members:
-          - id: 1001 # high number of ID for mkey
-            is_backup: disable # if enable, when healthcheck failed it will goes to this server
-            server: dmz.dc1.ndkprd.com # GLB Servers
-            server_member_name: public-waf-1.dc1.ndkprd.com # GLB Servers member
-            weight: 10
+    # global-dns-server address-group entries
+    fad_dns_address_groups:
+      - name: local
+        address_group_members:
+          - id: 1
+            addr_type: ipv4
+            ip6_network: "::/0"
+            ip4_network: "10.0.0.0/8"
+            action: "include"
+          - id: 2
+            addr_type: ipv4
+            ip6_network: "::/0"
+            ip4_network: "172.16.0.0/12"
+            action: "include"
+          - id: 3
+            addr_type: ipv4
+            ip6_network: "::/0"
+            ip4_network: "192.168.0.0/16"
+            action: "include"
+    # global-dns-server policy
+    fad_dns_policies:
+      - name: "LOCAL_DNS_POLICY" # Global DNS Policy mkey
+        source_address: "local" # valid Address Group entry mkey used as source
+        destination_address: "local" # valid Address Group entry used as destination
+        dns64_list: ""
+        dnssec_validate_status: "disable" # "enable" or "disable"
+        forward: "first" # "first" or "only"
+        forwarders: "" # valid Remote DNS Servers entry mkey
+        recursion_status: "disable" # "enable" or "disable"
+        rrlimit: "" # valid Response Rate Limit 
+      - name: "PUBLIC_DNS_POLICY" # Global DNS Policy mkey
+        source_address: "any" # valid Address Group entry mkey used as source
+        destination_address: "any" # valid Address Group entry used as destination
+        dns64_list: ""
+        dnssec_validate_status: "disable" # "enable" or "disable"
+        forward: "first" # "first" or "only"
+        forwarders: "" # valid Remote DNS Servers entry mkey
+        recursion_status: "disable" # "enable" or "disable"
+        rrlimit: "" # valid Response Rate Limit 
+    fad_dns_general_settings:
+      global_dns_mode: "enable"
+      certificate: "Factory"
+      dnssec_validate_status: "disable"
+      doh_interface_list: ""
+      doh_port: "80"
+      doh_status: "disable"
+      dohs_interface_list: ""
+      dohs_port: "443"
+      dohs_status: "disable"
+      dot_interface_list: ""
+      dot_port: "853"
+      dot_status: "disable"
+      forward: "first"
+      forwarders: ""
+      interface_list: ""
+      ipv4_mode: "enable"
+      ipv6_mode: "disable"
+      listen_to_all_interface: "enable"
+      recursion_status: "disable"
+      response_ratelimit: ""
+      traffic_log: "enable"
+      use_system_dns_server: "enable"
 
   roles:
     - ndkprd.fad_dns_policy
